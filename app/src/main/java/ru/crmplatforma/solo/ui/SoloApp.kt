@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import ru.crmplatforma.solo.ui.appointment.AppointmentEditorScreen
 import ru.crmplatforma.solo.ui.calendar.CalendarScreen
+import ru.crmplatforma.solo.ui.clients.ClientEditorScreen
 import ru.crmplatforma.solo.ui.clients.ClientsScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
@@ -46,12 +48,18 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object Finance : Screen("finance", "Финансы", Icons.Default.Wallet)
     data object More : Screen("more", "Ещё", Icons.Default.Menu)
 
-    // Детальные экраны
+    // Детальные экраны — Записи
     data object AppointmentNew : Screen("appointment/new/{date}", "Новая запись", Icons.Default.Add) {
         fun createRoute(date: LocalDate) = "appointment/new/${date}"
     }
     data object AppointmentEdit : Screen("appointment/edit/{id}", "Редактировать", Icons.Default.Edit) {
         fun createRoute(id: String) = "appointment/edit/$id"
+    }
+
+    // Детальные экраны — Клиенты
+    data object ClientNew : Screen("client/new", "Новый клиент", Icons.Default.PersonAdd)
+    data object ClientEdit : Screen("client/edit/{id}", "Редактировать клиента", Icons.Default.Edit) {
+        fun createRoute(id: String) = "client/edit/$id"
     }
 }
 
@@ -171,6 +179,28 @@ fun SoloApp(
                 AppointmentEditorScreen(
                     navController = navController,
                     appointmentId = appointmentId
+                )
+            }
+
+            // Редактор клиентов — новый клиент
+            composable(Screen.ClientNew.route) {
+                ClientEditorScreen(
+                    navController = navController,
+                    clientId = null
+                )
+            }
+
+            // Редактор клиентов — редактирование
+            composable(
+                route = Screen.ClientEdit.route,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val clientId = backStackEntry.arguments?.getString("id")
+                ClientEditorScreen(
+                    navController = navController,
+                    clientId = clientId
                 )
             }
         }
