@@ -68,6 +68,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Room schema export
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
 }
 
 dependencies {
