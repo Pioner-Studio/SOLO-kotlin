@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
@@ -34,6 +35,8 @@ import ru.crmplatforma.solo.ui.calendar.CalendarScreen
 import ru.crmplatforma.solo.ui.clients.ClientEditorScreen
 import ru.crmplatforma.solo.ui.clients.ClientPickerScreen
 import ru.crmplatforma.solo.ui.clients.ClientsScreen
+import ru.crmplatforma.solo.ui.services.ServiceEditorScreen
+import ru.crmplatforma.solo.ui.services.ServicesScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
 import ru.crmplatforma.solo.ui.more.MoreScreen
@@ -63,6 +66,13 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
         fun createRoute(id: String) = "client/edit/$id"
     }
     data object ClientPicker : Screen("client/pick", "Выбор клиента", Icons.Default.People)
+
+    // Детальные экраны — Услуги
+    data object Services : Screen("services", "Услуги", Icons.Default.ContentCut)
+    data object ServiceNew : Screen("service/new", "Новая услуга", Icons.Default.Add)
+    data object ServiceEdit : Screen("service/edit/{id}", "Редактировать услугу", Icons.Default.Edit) {
+        fun createRoute(id: String) = "service/edit/$id"
+    }
 }
 
 // Список вкладок Bottom Navigation
@@ -209,6 +219,33 @@ fun SoloApp(
             // Выбор клиента для записи
             composable(Screen.ClientPicker.route) {
                 ClientPickerScreen(navController = navController)
+            }
+
+            // Список услуг
+            composable(Screen.Services.route) {
+                ServicesScreen(navController = navController)
+            }
+
+            // Редактор услуг — новая услуга
+            composable(Screen.ServiceNew.route) {
+                ServiceEditorScreen(
+                    navController = navController,
+                    serviceId = null
+                )
+            }
+
+            // Редактор услуг — редактирование
+            composable(
+                route = Screen.ServiceEdit.route,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val serviceId = backStackEntry.arguments?.getString("id")
+                ServiceEditorScreen(
+                    navController = navController,
+                    serviceId = serviceId
+                )
             }
         }
     }

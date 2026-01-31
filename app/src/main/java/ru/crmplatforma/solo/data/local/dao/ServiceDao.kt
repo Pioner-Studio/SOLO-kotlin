@@ -27,6 +27,10 @@ interface ServiceDao {
     @Query("SELECT * FROM services ORDER BY isArchived ASC, name ASC")
     fun getAllFlow(): Flow<List<ServiceEntity>>
 
+    // Только архивные
+    @Query("SELECT * FROM services WHERE isArchived = 1 ORDER BY name ASC")
+    fun getArchivedFlow(): Flow<List<ServiceEntity>>
+
     @Query("SELECT * FROM services WHERE id = :id")
     suspend fun getById(id: String): ServiceEntity?
 

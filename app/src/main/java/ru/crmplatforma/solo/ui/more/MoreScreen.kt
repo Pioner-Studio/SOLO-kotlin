@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import ru.crmplatforma.solo.ui.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,10 +77,10 @@ fun MoreScreen(navController: NavController) {
             )
 
             MenuItem(
-                icon = Icons.AutoMirrored.Filled.List,
+                icon = Icons.Default.ContentCut,
                 title = "Услуги",
                 subtitle = "Прайс-лист",
-                onClick = { /* TODO */ }
+                onClick = { navController.navigate(Screen.Services.route) }
             )
             MenuItem(
                 icon = Icons.Default.CheckCircle,

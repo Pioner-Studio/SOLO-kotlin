@@ -22,6 +22,8 @@ class ServiceRepository @Inject constructor(
 
     fun getAllServices(): Flow<List<ServiceEntity>> = serviceDao.getAllFlow()
 
+    fun getArchivedServices(): Flow<List<ServiceEntity>> = serviceDao.getArchivedFlow()
+
     fun searchServices(query: String): Flow<List<ServiceEntity>> = serviceDao.searchFlow(query)
 
     suspend fun getServiceById(id: String): ServiceEntity? = serviceDao.getById(id)
