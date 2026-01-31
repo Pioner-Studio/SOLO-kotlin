@@ -40,6 +40,17 @@ class TransactionRepository @Inject constructor(
         return transactionDao.getExpense(start.toString(), end.toString())
     }
 
+    fun getIncomeForMonth(year: Int, month: Int): Flow<Long> {
+        val start = LocalDate.of(year, month, 1)
+        val end = start.withDayOfMonth(start.lengthOfMonth())
+        return transactionDao.getIncomeFlow(start.toString(), end.toString())
+    }
+
+    fun getTodayIncome(): Flow<Long> {
+        val today = LocalDate.now()
+        return transactionDao.getIncomeFlow(today.toString(), today.toString())
+    }
+
     // === Commands ===
 
     suspend fun createIncome(

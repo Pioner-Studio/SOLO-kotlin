@@ -64,6 +64,15 @@ interface ClientDao {
     """)
     fun getUpcomingBirthdaysFlow(today: String, limit: Int = 10): Flow<List<ClientEntity>>
 
+    // ДР на этой неделе (MM-dd формат)
+    @Query("""
+        SELECT * FROM clients
+        WHERE deletedAt IS NULL
+          AND birthday IS NOT NULL
+          AND SUBSTR(birthday, 6) BETWEEN :startMmDd AND :endMmDd
+    """)
+    fun getBirthdaysInRangeFlow(startMmDd: String, endMmDd: String): Flow<List<ClientEntity>>
+
     // === Синхронизация ===
 
     @Query("SELECT * FROM clients WHERE synced = 0")

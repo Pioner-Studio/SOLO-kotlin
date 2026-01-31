@@ -44,6 +44,16 @@ class ClientRepository @Inject constructor(
 
     fun getClientCount(): Flow<Int> = clientDao.getCountFlow()
 
+    fun getClientsWithBirthdayThisWeek(): Flow<List<ClientEntity>> {
+        val today = LocalDate.now()
+        val weekEnd = today.plusDays(7)
+        // Конвертируем в MM-dd формат для сравнения (без года)
+        return clientDao.getBirthdaysInRangeFlow(
+            today.toString().substring(5), // MM-dd
+            weekEnd.toString().substring(5)
+        )
+    }
+
     // === Commands ===
 
     suspend fun createClient(
