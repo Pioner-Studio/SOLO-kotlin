@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SOLO Brand Colors -->
+    <color name="solo_blue">#FF2563EB</color>
+    <color name="solo_blue_dark">#FF1D4ED8</color>
+    <color name="solo_blue_light">#FF3B82F6</color>
+
+    <!-- Semantic Colors -->
+    <color name="primary">#FF2563EB</color>
+    <color name="primary_variant">#FF1D4ED8</color>
+    <color name="secondary">#FF10B981</color>
+    <color name="secondary_variant">#FF059669</color>
+
+    <!-- Surface Colors -->
+    <color name="background">#FFFFFFFF</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="error">#FFEF4444</color>
+
+    <!-- On Colors -->
+    <color name="on_primary">#FFFFFFFF</color>
+    <color name="on_secondary">#FFFFFFFF</color>
+    <color name="on_background">#FF1F2937</color>
+    <color name="on_surface">#FF1F2937</color>
+    <color name="on_error">#FFFFFFFF</color>
+
+    <!-- Basic -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

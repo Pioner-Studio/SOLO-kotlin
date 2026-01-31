@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Основная тема приложения -->
+    <style name="Theme.SOLO" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Тема Splash Screen -->
+    <style name="Theme.SOLO.Splash" parent="Theme.SplashScreen">
+        <!-- Цвет фона splash (синий - бренд SOLO) -->
+        <item name="windowSplashScreenBackground">#2563EB</item>
+        <!-- Иконка по центру -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <!-- Тема после splash -->
+        <item name="postSplashScreenTheme">@style/Theme.SOLO</item>
+    </style>
+
+</resources>
