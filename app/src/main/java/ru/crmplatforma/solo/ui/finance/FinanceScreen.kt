@@ -3,8 +3,8 @@ package ru.crmplatforma.solo.ui.finance
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.TrendingDown
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -70,14 +70,14 @@ fun FinanceScreen(navController: NavController) {
                 SummaryCard(
                     title = "Доход",
                     amount = "0 ₽",
-                    icon = Icons.Default.TrendingUp,
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
                     color = Color(0xFF22C55E),
                     modifier = Modifier.weight(1f)
                 )
                 SummaryCard(
                     title = "Расход",
                     amount = "0 ₽",
-                    icon = Icons.Default.TrendingDown,
+                    icon = Icons.AutoMirrored.Filled.TrendingDown,
                     color = Color(0xFFEF4444),
                     modifier = Modifier.weight(1f)
                 )
