@@ -105,7 +105,7 @@ fun MoreScreen(navController: NavController) {
                 title = "ICE",
                 subtitle = "Экстренная карточка",
                 badgeText = "!",
-                onClick = { /* TODO */ }
+                onClick = { navController.navigate(Screen.ICE.route) }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

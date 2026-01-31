@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Wallet
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,6 +47,8 @@ import ru.crmplatforma.solo.ui.tasks.TaskEditorScreen
 import ru.crmplatforma.solo.ui.tasks.TasksScreen
 import ru.crmplatforma.solo.ui.more.MoreScreen
 import ru.crmplatforma.solo.ui.onboarding.OnboardingScreen
+import ru.crmplatforma.solo.ui.ice.ICEScreen
+import ru.crmplatforma.solo.ui.ice.ICEEditorScreen
 import java.time.LocalDate
 
 // Роуты навигации
@@ -89,6 +92,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object TaskEdit : Screen("task/edit/{id}", "Редактировать задачу", Icons.Default.Edit) {
         fun createRoute(id: String) = "task/edit/$id"
     }
+
+    // Детальные экраны — ICE
+    data object ICE : Screen("ice", "ICE", Icons.Default.Warning)
+    data object ICEEdit : Screen("ice/edit", "Редактировать ICE", Icons.Default.Edit)
 }
 
 // Список вкладок Bottom Navigation
@@ -293,6 +300,16 @@ fun SoloApp(
             ) { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("id")
                 TaskEditorScreen(navController = navController, taskId = taskId)
+            }
+
+            // ICE — экстренная карточка
+            composable(Screen.ICE.route) {
+                ICEScreen(navController = navController)
+            }
+
+            // Редактор ICE
+            composable(Screen.ICEEdit.route) {
+                ICEEditorScreen(navController = navController)
             }
         }
     }
