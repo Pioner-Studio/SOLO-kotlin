@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
@@ -41,6 +42,8 @@ import ru.crmplatforma.solo.ui.services.ServicesScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
 import ru.crmplatforma.solo.ui.finance.TransactionEditorScreen
+import ru.crmplatforma.solo.ui.tasks.TaskEditorScreen
+import ru.crmplatforma.solo.ui.tasks.TasksScreen
 import ru.crmplatforma.solo.ui.more.MoreScreen
 import ru.crmplatforma.solo.ui.onboarding.OnboardingScreen
 import java.time.LocalDate
@@ -79,6 +82,13 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 
     // Детальные экраны — Финансы
     data object TransactionNew : Screen("transaction/new", "Новая операция", Icons.Default.Add)
+
+    // Детальные экраны — Задачи
+    data object Tasks : Screen("tasks", "Задачи", Icons.Default.CheckCircle)
+    data object TaskNew : Screen("task/new", "Новая задача", Icons.Default.Add)
+    data object TaskEdit : Screen("task/edit/{id}", "Редактировать задачу", Icons.Default.Edit) {
+        fun createRoute(id: String) = "task/edit/$id"
+    }
 }
 
 // Список вкладок Bottom Navigation
@@ -262,6 +272,27 @@ fun SoloApp(
             // Выбор услуг для записи
             composable(Screen.ServicePicker.route) {
                 ServicePickerScreen(navController = navController)
+            }
+
+            // Список задач
+            composable(Screen.Tasks.route) {
+                TasksScreen(navController = navController)
+            }
+
+            // Новая задача
+            composable(Screen.TaskNew.route) {
+                TaskEditorScreen(navController = navController, taskId = null)
+            }
+
+            // Редактирование задачи
+            composable(
+                route = Screen.TaskEdit.route,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getString("id")
+                TaskEditorScreen(navController = navController, taskId = taskId)
             }
         }
     }

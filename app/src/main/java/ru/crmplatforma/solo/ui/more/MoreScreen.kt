@@ -86,7 +86,7 @@ fun MoreScreen(navController: NavController) {
                 icon = Icons.Default.CheckCircle,
                 title = "Задачи",
                 subtitle = "Дела и напоминания",
-                onClick = { /* TODO */ }
+                onClick = { navController.navigate(Screen.Tasks.route) }
             )
             MenuItem(
                 icon = Icons.Default.CreditCard,
