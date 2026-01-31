@@ -11,6 +11,7 @@ import ru.crmplatforma.solo.data.local.UserPreferences
 import ru.crmplatforma.solo.data.local.entity.AppointmentStatus
 import ru.crmplatforma.solo.data.local.entity.AppointmentType
 import ru.crmplatforma.solo.data.repository.AppointmentRepository
+import ru.crmplatforma.solo.data.repository.TransactionRepository
 import ru.crmplatforma.solo.work.ReminderScheduler
 import java.time.LocalDate
 import java.time.LocalTime
@@ -44,6 +45,7 @@ data class AppointmentEditorState(
 @HiltViewModel
 class AppointmentEditorViewModel @Inject constructor(
     private val appointmentRepository: AppointmentRepository,
+    private val transactionRepository: TransactionRepository,
     private val reminderScheduler: ReminderScheduler,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
@@ -258,9 +260,21 @@ class AppointmentEditorViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 val existing = appointmentRepository.getAppointmentByIdOnce(id)
-                existing?.copy(status = AppointmentStatus.COMPLETED)?.also {
-                    appointmentRepository.updateAppointment(it)
-                    reminderScheduler.cancelAppointmentReminders(id) // Отменяем напоминания
+                existing?.copy(status = AppointmentStatus.COMPLETED)?.also { appointment ->
+                    appointmentRepository.updateAppointment(appointment)
+                    reminderScheduler.cancelAppointmentReminders(id)
+
+                    // Автоматически создаём доход (если есть цена)
+                    if (appointment.totalPriceKopecks > 0) {
+                        transactionRepository.createIncome(
+                            amountKopecks = appointment.totalPriceKopecks,
+                            date = appointment.startAt.toLocalDate(),
+                            description = appointment.clientName ?: appointment.title,
+                            appointmentId = appointment.id,
+                            clientId = appointment.clientId,
+                            clientName = appointment.clientName
+                        )
+                    }
                 }
                 _saveSuccess.value = true
             } finally {
@@ -279,7 +293,9 @@ class AppointmentEditorViewModel @Inject constructor(
                 val existing = appointmentRepository.getAppointmentByIdOnce(id)
                 existing?.copy(status = AppointmentStatus.CANCELLED)?.also {
                     appointmentRepository.updateAppointment(it)
-                    reminderScheduler.cancelAppointmentReminders(id) // Отменяем напоминания
+                    reminderScheduler.cancelAppointmentReminders(id)
+                    // Удаляем связанную транзакцию (если была)
+                    transactionRepository.deleteByAppointment(id)
                 }
                 _saveSuccess.value = true
             } finally {
@@ -316,6 +332,7 @@ class AppointmentEditorViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 reminderScheduler.cancelAppointmentReminders(id)
+                transactionRepository.deleteByAppointment(id) // Удаляем связанную транзакцию
                 appointmentRepository.deleteAppointment(id)
                 _saveSuccess.value = true
             } finally {
