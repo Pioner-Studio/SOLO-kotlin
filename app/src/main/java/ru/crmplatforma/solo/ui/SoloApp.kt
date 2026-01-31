@@ -2,7 +2,9 @@ package ru.crmplatforma.solo.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Today
@@ -24,12 +26,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import ru.crmplatforma.solo.ui.appointment.AppointmentEditorScreen
 import ru.crmplatforma.solo.ui.calendar.CalendarScreen
 import ru.crmplatforma.solo.ui.clients.ClientsScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
 import ru.crmplatforma.solo.ui.more.MoreScreen
 import ru.crmplatforma.solo.ui.onboarding.OnboardingScreen
+import java.time.LocalDate
 
 // Роуты навигации
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
@@ -39,6 +45,14 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object Clients : Screen("clients", "Клиенты", Icons.Default.People)
     data object Finance : Screen("finance", "Финансы", Icons.Default.Wallet)
     data object More : Screen("more", "Ещё", Icons.Default.Menu)
+
+    // Детальные экраны
+    data object AppointmentNew : Screen("appointment/new/{date}", "Новая запись", Icons.Default.Add) {
+        fun createRoute(date: LocalDate) = "appointment/new/${date}"
+    }
+    data object AppointmentEdit : Screen("appointment/edit/{id}", "Редактировать", Icons.Default.Edit) {
+        fun createRoute(id: String) = "appointment/edit/$id"
+    }
 }
 
 // Список вкладок Bottom Navigation
@@ -128,6 +142,36 @@ fun SoloApp(
             }
             composable(Screen.More.route) {
                 MoreScreen(navController = navController)
+            }
+
+            // Редактор записей — новая запись
+            composable(
+                route = Screen.AppointmentNew.route,
+                arguments = listOf(
+                    navArgument("date") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val dateStr = backStackEntry.arguments?.getString("date") ?: LocalDate.now().toString()
+                val date = try { LocalDate.parse(dateStr) } catch (e: Exception) { LocalDate.now() }
+                AppointmentEditorScreen(
+                    navController = navController,
+                    appointmentId = null,
+                    initialDate = date
+                )
+            }
+
+            // Редактор записей — редактирование
+            composable(
+                route = Screen.AppointmentEdit.route,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val appointmentId = backStackEntry.arguments?.getString("id")
+                AppointmentEditorScreen(
+                    navController = navController,
+                    appointmentId = appointmentId
+                )
             }
         }
     }

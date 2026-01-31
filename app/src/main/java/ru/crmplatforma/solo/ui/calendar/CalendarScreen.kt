@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import ru.crmplatforma.solo.data.local.entity.AppointmentEntity
 import ru.crmplatforma.solo.data.local.entity.AppointmentStatus
 import ru.crmplatforma.solo.data.local.entity.AppointmentType
+import ru.crmplatforma.solo.ui.Screen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -73,7 +74,9 @@ fun CalendarScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Создать запись */ }
+                onClick = {
+                    navController.navigate(Screen.AppointmentNew.createRoute(selectedDate))
+                }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Добавить запись")
             }
@@ -89,7 +92,9 @@ fun CalendarScreen(
                     DayView(
                         date = selectedDate,
                         appointments = appointments,
-                        onAppointmentClick = { /* TODO: Открыть запись */ }
+                        onAppointmentClick = { appointment ->
+                            navController.navigate(Screen.AppointmentEdit.createRoute(appointment.id))
+                        }
                     )
                 }
                 CalendarViewMode.TWO_WEEKS -> {
@@ -97,7 +102,9 @@ fun CalendarScreen(
                         selectedDate = selectedDate,
                         appointmentsByDate = appointmentsByDate,
                         onDateSelect = { viewModel.selectDate(it) },
-                        onAppointmentClick = { /* TODO: Открыть запись */ }
+                        onAppointmentClick = { appointment ->
+                            navController.navigate(Screen.AppointmentEdit.createRoute(appointment.id))
+                        }
                     )
                 }
                 CalendarViewMode.MONTH -> {
