@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ru.crmplatforma.solo.data.local.entity.AppointmentStatus
 import ru.crmplatforma.solo.data.local.entity.AppointmentType
+import ru.crmplatforma.solo.ui.Screen
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -53,6 +54,25 @@ fun AppointmentEditorScreen(
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             navController.popBackStack()
+        }
+    }
+
+    // Эффект: получить выбранного клиента из ClientPicker
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    LaunchedEffect(savedStateHandle) {
+        savedStateHandle?.getStateFlow<String?>("selected_client_id", null)?.collect { clientId ->
+            if (clientId != null) {
+                viewModel.setClientId(clientId)
+                savedStateHandle.remove<String>("selected_client_id")
+            }
+        }
+    }
+    LaunchedEffect(savedStateHandle) {
+        savedStateHandle?.getStateFlow<String?>("selected_client_name", null)?.collect { clientName ->
+            if (clientName != null) {
+                viewModel.setClientName(clientName)
+                savedStateHandle.remove<String>("selected_client_name")
+            }
         }
     }
 
@@ -123,7 +143,9 @@ fun AppointmentEditorScreen(
                         VisitFields(
                             clientName = uiState.clientName,
                             onClientNameChange = { viewModel.setClientName(it) },
-                            onSelectClient = { /* TODO: Открыть выбор клиента */ },
+                            onSelectClient = {
+                                navController.navigate(Screen.ClientPicker.route)
+                            },
                             totalPrice = uiState.totalPriceRubles,
                             onTotalPriceChange = { viewModel.setTotalPrice(it) },
                             notes = uiState.notes,
@@ -418,20 +440,47 @@ private fun VisitFields(
     onNotesChange: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        // Клиент
-        OutlinedTextField(
-            value = clientName,
-            onValueChange = onClientNameChange,
-            label = { Text("Клиент") },
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-            trailingIcon = {
-                IconButton(onClick = onSelectClient) {
-                    Icon(Icons.Default.Search, contentDescription = "Выбрать клиента")
-                }
-            },
-            singleLine = true
+        // Клиент — кликабельная карточка
+        Text(
+            text = "Клиент",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        OutlinedCard(
+            onClick = onSelectClient,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = if (clientName.isBlank())
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = clientName.ifBlank { "Выберите клиента" },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (clientName.isBlank())
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
         // Цена
         OutlinedTextField(

@@ -32,6 +32,7 @@ import androidx.navigation.navArgument
 import ru.crmplatforma.solo.ui.appointment.AppointmentEditorScreen
 import ru.crmplatforma.solo.ui.calendar.CalendarScreen
 import ru.crmplatforma.solo.ui.clients.ClientEditorScreen
+import ru.crmplatforma.solo.ui.clients.ClientPickerScreen
 import ru.crmplatforma.solo.ui.clients.ClientsScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
@@ -61,6 +62,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object ClientEdit : Screen("client/edit/{id}", "Редактировать клиента", Icons.Default.Edit) {
         fun createRoute(id: String) = "client/edit/$id"
     }
+    data object ClientPicker : Screen("client/pick", "Выбор клиента", Icons.Default.People)
 }
 
 // Список вкладок Bottom Navigation
@@ -202,6 +204,11 @@ fun SoloApp(
                     navController = navController,
                     clientId = clientId
                 )
+            }
+
+            // Выбор клиента для записи
+            composable(Screen.ClientPicker.route) {
+                ClientPickerScreen(navController = navController)
             }
         }
     }
