@@ -76,6 +76,24 @@ fun AppointmentEditorScreen(
         }
     }
 
+    // Эффект: получить выбранные услуги из ServicePicker
+    LaunchedEffect(savedStateHandle) {
+        savedStateHandle?.getStateFlow<String?>("selected_service_names", null)?.collect { names ->
+            if (names != null) {
+                viewModel.setServiceNames(names)
+                savedStateHandle.remove<String>("selected_service_names")
+            }
+        }
+    }
+    LaunchedEffect(savedStateHandle) {
+        savedStateHandle?.getStateFlow<Long?>("selected_service_price", null)?.collect { price ->
+            if (price != null && price > 0) {
+                viewModel.setTotalPrice((price / 100).toString())
+                savedStateHandle.remove<Long>("selected_service_price")
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -145,6 +163,10 @@ fun AppointmentEditorScreen(
                             onClientNameChange = { viewModel.setClientName(it) },
                             onSelectClient = {
                                 navController.navigate(Screen.ClientPicker.route)
+                            },
+                            serviceNames = uiState.serviceNames,
+                            onSelectServices = {
+                                navController.navigate(Screen.ServicePicker.route)
                             },
                             totalPrice = uiState.totalPriceRubles,
                             onTotalPriceChange = { viewModel.setTotalPrice(it) },
@@ -434,6 +456,8 @@ private fun VisitFields(
     clientName: String,
     onClientNameChange: (String) -> Unit,
     onSelectClient: () -> Unit,
+    serviceNames: String,
+    onSelectServices: () -> Unit,
     totalPrice: String,
     onTotalPriceChange: (String) -> Unit,
     notes: String,
@@ -482,6 +506,49 @@ private fun VisitFields(
             }
         }
 
+        // Услуги — кликабельная карточка
+        Text(
+            text = "Услуги",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        OutlinedCard(
+            onClick = onSelectServices,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCut,
+                    contentDescription = null,
+                    tint = if (serviceNames.isBlank())
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = serviceNames.ifBlank { "Выберите услуги" },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (serviceNames.isBlank())
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2
+                )
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         // Цена
         OutlinedTextField(
             value = totalPrice,
@@ -489,7 +556,10 @@ private fun VisitFields(
             label = { Text("Стоимость, ₽") },
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Default.Payments, contentDescription = null) },
-            singleLine = true
+            singleLine = true,
+            supportingText = if (serviceNames.isNotBlank()) {
+                { Text("Рассчитано автоматически") }
+            } else null
         )
 
         // Заметки

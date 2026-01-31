@@ -31,6 +31,7 @@ data class AppointmentEditorState(
     val endTime: LocalTime = LocalTime.of(11, 0),
     val clientId: String? = null,
     val clientName: String = "",
+    val serviceNames: String = "",  // Названия выбранных услуг через запятую
     val totalPriceRubles: String = "",
     val title: String = "",
     val notes: String = "",
@@ -132,6 +133,10 @@ class AppointmentEditorViewModel @Inject constructor(
 
     fun setClientName(name: String) {
         _uiState.value = _uiState.value.copy(clientName = name)
+    }
+
+    fun setServiceNames(names: String) {
+        _uiState.value = _uiState.value.copy(serviceNames = names)
     }
 
     fun setTotalPrice(rubles: String) {
