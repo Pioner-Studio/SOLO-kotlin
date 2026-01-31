@@ -92,7 +92,7 @@ fun MoreScreen(navController: NavController) {
                 icon = Icons.Default.CreditCard,
                 title = "Подписки",
                 subtitle = "Регулярные платежи",
-                onClick = { /* TODO */ }
+                onClick = { navController.navigate(Screen.Subscriptions.route) }
             )
             MenuItem(
                 icon = Icons.Default.Inventory2,

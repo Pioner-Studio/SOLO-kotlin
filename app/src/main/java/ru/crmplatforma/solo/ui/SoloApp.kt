@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -49,6 +50,8 @@ import ru.crmplatforma.solo.ui.more.MoreScreen
 import ru.crmplatforma.solo.ui.onboarding.OnboardingScreen
 import ru.crmplatforma.solo.ui.ice.ICEScreen
 import ru.crmplatforma.solo.ui.ice.ICEEditorScreen
+import ru.crmplatforma.solo.ui.subscriptions.SubscriptionsScreen
+import ru.crmplatforma.solo.ui.subscriptions.SubscriptionEditorScreen
 import java.time.LocalDate
 
 // Роуты навигации
@@ -96,6 +99,13 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     // Детальные экраны — ICE
     data object ICE : Screen("ice", "ICE", Icons.Default.Warning)
     data object ICEEdit : Screen("ice/edit", "Редактировать ICE", Icons.Default.Edit)
+
+    // Детальные экраны — Подписки
+    data object Subscriptions : Screen("subscriptions", "Подписки", Icons.Default.CreditCard)
+    data object SubscriptionNew : Screen("subscription/new", "Новая подписка", Icons.Default.Add)
+    data object SubscriptionEdit : Screen("subscription/edit/{id}", "Редактировать подписку", Icons.Default.Edit) {
+        fun createRoute(id: String) = "subscription/edit/$id"
+    }
 }
 
 // Список вкладок Bottom Navigation
@@ -310,6 +320,27 @@ fun SoloApp(
             // Редактор ICE
             composable(Screen.ICEEdit.route) {
                 ICEEditorScreen(navController = navController)
+            }
+
+            // Список подписок
+            composable(Screen.Subscriptions.route) {
+                SubscriptionsScreen(navController = navController)
+            }
+
+            // Новая подписка
+            composable(Screen.SubscriptionNew.route) {
+                SubscriptionEditorScreen(navController = navController)
+            }
+
+            // Редактирование подписки
+            composable(
+                route = Screen.SubscriptionEdit.route,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val subscriptionId = backStackEntry.arguments?.getString("id")
+                SubscriptionEditorScreen(navController = navController, subscriptionId = subscriptionId)
             }
         }
     }
