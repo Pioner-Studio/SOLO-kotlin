@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.crmplatforma.solo.data.local.UserPreferences
+import ru.crmplatforma.solo.data.local.entity.AppointmentStatus
 import ru.crmplatforma.solo.data.local.entity.AppointmentType
 import ru.crmplatforma.solo.data.repository.AppointmentRepository
 import ru.crmplatforma.solo.work.ReminderScheduler
@@ -23,6 +24,7 @@ import javax.inject.Inject
 data class AppointmentEditorState(
     val id: String? = null,
     val type: AppointmentType = AppointmentType.VISIT,
+    val status: AppointmentStatus = AppointmentStatus.SCHEDULED,
     val date: LocalDate = LocalDate.now(),
     val startTime: LocalTime = LocalTime.of(10, 0),
     val endTime: LocalTime = LocalTime.of(11, 0),
@@ -77,6 +79,7 @@ class AppointmentEditorViewModel @Inject constructor(
                     _uiState.value = AppointmentEditorState(
                         id = appointment.id,
                         type = appointment.type,
+                        status = appointment.status,
                         date = appointment.startAt.toLocalDate(),
                         startTime = appointment.startAt.toLocalTime(),
                         endTime = appointment.endAt.toLocalTime(),
@@ -238,6 +241,65 @@ class AppointmentEditorViewModel @Inject constructor(
                     reminderScheduler.scheduleAppointmentReminders(it)
                 }
 
+                _saveSuccess.value = true
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // === Status Actions ===
+
+    fun markCompleted() {
+        val id = _uiState.value.id ?: return
+        if (_uiState.value.status != AppointmentStatus.SCHEDULED) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val existing = appointmentRepository.getAppointmentByIdOnce(id)
+                existing?.copy(status = AppointmentStatus.COMPLETED)?.also {
+                    appointmentRepository.updateAppointment(it)
+                    reminderScheduler.cancelAppointmentReminders(id) // Отменяем напоминания
+                }
+                _saveSuccess.value = true
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun markCancelled() {
+        val id = _uiState.value.id ?: return
+        if (_uiState.value.status != AppointmentStatus.SCHEDULED) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val existing = appointmentRepository.getAppointmentByIdOnce(id)
+                existing?.copy(status = AppointmentStatus.CANCELLED)?.also {
+                    appointmentRepository.updateAppointment(it)
+                    reminderScheduler.cancelAppointmentReminders(id) // Отменяем напоминания
+                }
+                _saveSuccess.value = true
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun markNoShow() {
+        val id = _uiState.value.id ?: return
+        if (_uiState.value.status != AppointmentStatus.SCHEDULED) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val existing = appointmentRepository.getAppointmentByIdOnce(id)
+                existing?.copy(status = AppointmentStatus.NO_SHOW)?.also {
+                    appointmentRepository.updateAppointment(it)
+                    reminderScheduler.cancelAppointmentReminders(id)
+                }
                 _saveSuccess.value = true
             } finally {
                 _isLoading.value = false

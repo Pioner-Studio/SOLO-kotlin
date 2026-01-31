@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import ru.crmplatforma.solo.data.local.entity.AppointmentStatus
 import ru.crmplatforma.solo.data.local.entity.AppointmentType
 import java.time.LocalDate
 import java.time.LocalTime
@@ -158,6 +159,25 @@ fun AppointmentEditorScreen(
                         onRemind1hChange = { viewModel.setRemind1h(it) },
                         onRemind15mChange = { viewModel.setRemind15m(it) }
                     )
+                }
+
+                // Кнопки управления статусом (только для VISIT в статусе SCHEDULED)
+                if (appointmentId != null &&
+                    uiState.type == AppointmentType.VISIT &&
+                    uiState.status == AppointmentStatus.SCHEDULED
+                ) {
+                    HorizontalDivider()
+                    StatusActionsSection(
+                        onComplete = { viewModel.markCompleted() },
+                        onCancel = { viewModel.markCancelled() },
+                        onNoShow = { viewModel.markNoShow() }
+                    )
+                }
+
+                // Индикатор статуса (если не SCHEDULED)
+                if (appointmentId != null && uiState.status != AppointmentStatus.SCHEDULED) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    StatusBadge(status = uiState.status)
                 }
 
                 // Кнопка удаления (только при редактировании)
@@ -538,6 +558,121 @@ private fun RemindersSection(
                 onCheckedChange = onRemind15mChange
             )
             Text("За 15 минут")
+        }
+    }
+}
+
+@Composable
+private fun StatusActionsSection(
+    onComplete: () -> Unit,
+    onCancel: () -> Unit,
+    onNoShow: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Действия",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Завершить
+            Button(
+                onClick = onComplete,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Завершить")
+            }
+
+            // Отменить
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Отменить")
+            }
+        }
+
+        // Не пришёл
+        OutlinedButton(
+            onClick = onNoShow,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.tertiary
+            )
+        ) {
+            Icon(Icons.Default.PersonOff, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("Не пришёл")
+        }
+    }
+}
+
+@Composable
+private fun StatusBadge(status: AppointmentStatus) {
+    val (text, containerColor, contentColor) = when (status) {
+        AppointmentStatus.SCHEDULED -> Triple(
+            "Запланировано",
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        AppointmentStatus.COMPLETED -> Triple(
+            "Завершено",
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer
+        )
+        AppointmentStatus.CANCELLED -> Triple(
+            "Отменено",
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer
+        )
+        AppointmentStatus.NO_SHOW -> Triple(
+            "Не пришёл",
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = when (status) {
+                    AppointmentStatus.SCHEDULED -> Icons.Default.Schedule
+                    AppointmentStatus.COMPLETED -> Icons.Default.CheckCircle
+                    AppointmentStatus.CANCELLED -> Icons.Default.Cancel
+                    AppointmentStatus.NO_SHOW -> Icons.Default.PersonOff
+                },
+                contentDescription = null,
+                tint = contentColor
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                color = contentColor
+            )
         }
     }
 }
