@@ -39,6 +39,7 @@ import ru.crmplatforma.solo.ui.services.ServiceEditorScreen
 import ru.crmplatforma.solo.ui.services.ServicesScreen
 import ru.crmplatforma.solo.ui.dashboard.DashboardScreen
 import ru.crmplatforma.solo.ui.finance.FinanceScreen
+import ru.crmplatforma.solo.ui.finance.TransactionEditorScreen
 import ru.crmplatforma.solo.ui.more.MoreScreen
 import ru.crmplatforma.solo.ui.onboarding.OnboardingScreen
 import java.time.LocalDate
@@ -73,6 +74,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object ServiceEdit : Screen("service/edit/{id}", "Редактировать услугу", Icons.Default.Edit) {
         fun createRoute(id: String) = "service/edit/$id"
     }
+
+    // Детальные экраны — Финансы
+    data object TransactionNew : Screen("transaction/new", "Новая операция", Icons.Default.Add)
 }
 
 // Список вкладок Bottom Navigation
@@ -246,6 +250,11 @@ fun SoloApp(
                     navController = navController,
                     serviceId = serviceId
                 )
+            }
+
+            // Новая транзакция (доход/расход)
+            composable(Screen.TransactionNew.route) {
+                TransactionEditorScreen(navController = navController)
             }
         }
     }

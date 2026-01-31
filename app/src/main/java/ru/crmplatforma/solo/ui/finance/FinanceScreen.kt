@@ -1,6 +1,8 @@
 package ru.crmplatforma.solo.ui.finance
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
@@ -10,31 +12,36 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import ru.crmplatforma.solo.data.local.entity.TransactionEntity
+import ru.crmplatforma.solo.data.local.entity.TransactionType
+import ru.crmplatforma.solo.ui.Screen
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FinanceScreen(navController: NavController) {
-    var selectedPeriod by remember { mutableStateOf(0) }
-    val periodOptions = listOf("День", "Неделя", "Месяц")
+fun FinanceScreen(
+    navController: NavController,
+    viewModel: FinanceViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Финансы") },
-                actions = {
-                    IconButton(onClick = { /* Add transaction */ }) {
-                        Icon(Icons.Default.Add, contentDescription = "Добавить")
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /* Add expense */ }) {
+            FloatingActionButton(
+                onClick = { navController.navigate(Screen.TransactionNew.route) }
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Добавить операцию")
             }
         }
@@ -49,13 +56,22 @@ fun FinanceScreen(navController: NavController) {
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                periodOptions.forEachIndexed { index, label ->
+                FinancePeriod.entries.forEachIndexed { index, period ->
                     SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = periodOptions.size),
-                        onClick = { selectedPeriod = index },
-                        selected = selectedPeriod == index
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = FinancePeriod.entries.size
+                        ),
+                        onClick = { viewModel.setPeriod(period) },
+                        selected = uiState.period == period
                     ) {
-                        Text(label)
+                        Text(
+                            when (period) {
+                                FinancePeriod.DAY -> "День"
+                                FinancePeriod.WEEK -> "Неделя"
+                                FinancePeriod.MONTH -> "Месяц"
+                            }
+                        )
                     }
                 }
             }
@@ -69,14 +85,14 @@ fun FinanceScreen(navController: NavController) {
             ) {
                 SummaryCard(
                     title = "Доход",
-                    amount = "0 ₽",
+                    amount = uiState.incomeFormatted,
                     icon = Icons.AutoMirrored.Filled.TrendingUp,
                     color = Color(0xFF22C55E),
                     modifier = Modifier.weight(1f)
                 )
                 SummaryCard(
                     title = "Расход",
-                    amount = "0 ₽",
+                    amount = uiState.expenseFormatted,
                     icon = Icons.AutoMirrored.Filled.TrendingDown,
                     color = Color(0xFFEF4444),
                     modifier = Modifier.weight(1f)
@@ -89,7 +105,10 @@ fun FinanceScreen(navController: NavController) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (uiState.profitKopecks >= 0)
+                        MaterialTheme.colorScheme.primaryContainer
+                    else
+                        MaterialTheme.colorScheme.errorContainer
                 )
             ) {
                 Row(
@@ -104,40 +123,36 @@ fun FinanceScreen(navController: NavController) {
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "0 ₽",
+                        text = uiState.profitFormatted,
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (uiState.profitKopecks >= 0)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.error
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Empty state
+            // Transactions list
             Text(
                 text = "Операции",
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+
+            if (uiState.transactions.isEmpty()) {
+                EmptyTransactionsState(
+                    onAddTransaction = { navController.navigate(Screen.TransactionNew.route) }
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "💰",
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Нет операций",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    items(uiState.transactions, key = { it.id }) { transaction ->
+                        TransactionCard(transaction = transaction)
+                    }
                 }
             }
         }
@@ -180,6 +195,104 @@ private fun SummaryCard(
                 style = MaterialTheme.typography.titleLarge,
                 color = color
             )
+        }
+    }
+}
+
+@Composable
+private fun TransactionCard(transaction: TransactionEntity) {
+    val isIncome = transaction.type == TransactionType.INCOME
+    val color = if (isIncome) Color(0xFF22C55E) else Color(0xFFEF4444)
+    val sign = if (isIncome) "+" else "−"
+    val amount = transaction.amountKopecks / 100
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (isIncome)
+                    Icons.AutoMirrored.Filled.TrendingUp
+                else
+                    Icons.AutoMirrored.Filled.TrendingDown,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = transaction.description
+                        ?: (if (isIncome) "Доход" else transaction.category ?: "Расход"),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = transaction.date.format(DateTimeFormatter.ofPattern("d MMM")),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    transaction.category?.let { category ->
+                        Text(
+                            text = "• $category",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = "$sign%,d ₽".format(amount).replace(',', ' '),
+                style = MaterialTheme.typography.titleMedium,
+                color = color
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyTransactionsState(onAddTransaction: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Нет операций",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Добавьте первый доход или расход",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onAddTransaction) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Добавить")
+            }
         }
     }
 }
