@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "491549855102",
+    "project_id": "solo-eb032",
+    "storage_bucket": "solo-eb032.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491549855102:android:1f5a9882262fac1464772f",
+        "android_client_info": {
+          "package_name": "ru.crmplatforma.solo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOO7HQMzLv2XpBP6psjX2aOGNNBKC4igI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
