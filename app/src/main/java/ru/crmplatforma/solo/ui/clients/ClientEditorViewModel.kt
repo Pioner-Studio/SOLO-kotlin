@@ -111,16 +111,21 @@ class ClientEditorViewModel @Inject constructor(
     // === Save ===
 
     fun save() {
-        if (!isValid()) return
+        android.util.Log.d("ClientEditor", "save() вызван, isValid=${isValid()}, state=${_uiState.value}")
+        if (!isValid()) {
+            android.util.Log.w("ClientEditor", "save() отменён - isValid()=false")
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val state = _uiState.value
+                android.util.Log.d("ClientEditor", "Сохраняю клиента: id=${state.id}, name='${state.name}'")
 
                 if (state.id == null) {
                     // Создание нового клиента
-                    clientRepository.createClient(
+                    val created = clientRepository.createClient(
                         name = state.name,
                         phone = state.phone.takeIf { it.isNotBlank() },
                         email = state.email.takeIf { it.isNotBlank() },
@@ -128,9 +133,11 @@ class ClientEditorViewModel @Inject constructor(
                         notes = state.notes.takeIf { it.isNotBlank() },
                         isVip = state.isVip
                     )
+                    android.util.Log.d("ClientEditor", "Клиент создан: ${created.id}, name='${created.name}'")
                 } else {
                     // Обновление существующего
                     val existing = clientRepository.getClientByIdOnce(state.id)
+                    android.util.Log.d("ClientEditor", "Существующий клиент: $existing")
                     existing?.copy(
                         name = state.name,
                         phone = state.phone.takeIf { it.isNotBlank() },
@@ -140,9 +147,11 @@ class ClientEditorViewModel @Inject constructor(
                         isVip = state.isVip
                     )?.also {
                         clientRepository.updateClient(it)
+                        android.util.Log.d("ClientEditor", "Клиент обновлён: ${it.id}")
                     }
                 }
 
+                android.util.Log.d("ClientEditor", "Сохранение успешно, устанавливаю saveSuccess=true")
                 _saveSuccess.value = true
             } catch (e: Exception) {
                 android.util.Log.e("ClientEditor", "Ошибка сохранения клиента", e)

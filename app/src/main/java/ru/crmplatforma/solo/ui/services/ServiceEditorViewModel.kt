@@ -63,16 +63,19 @@ class ServiceEditorViewModel @Inject constructor(
     // === Setters ===
 
     fun setName(name: String) {
+        android.util.Log.d("ServiceEditor", "setName: '$name', current state: ${_uiState.value}")
         _uiState.value = _uiState.value.copy(name = name)
     }
 
     fun setPrice(rubles: String) {
         val filtered = rubles.filter { it.isDigit() }
+        android.util.Log.d("ServiceEditor", "setPrice: '$rubles' -> '$filtered'")
         _uiState.value = _uiState.value.copy(priceRubles = filtered)
     }
 
     fun setDuration(minutes: String) {
         val filtered = minutes.filter { it.isDigit() }
+        android.util.Log.d("ServiceEditor", "setDuration: '$minutes' -> '$filtered'")
         _uiState.value = _uiState.value.copy(durationMinutes = filtered)
     }
 
@@ -84,15 +87,21 @@ class ServiceEditorViewModel @Inject constructor(
 
     fun isValid(): Boolean {
         val state = _uiState.value
-        return state.name.isNotBlank() &&
+        val valid = state.name.isNotBlank() &&
                 state.priceRubles.isNotBlank() &&
                 state.durationMinutes.isNotBlank()
+        android.util.Log.d("ServiceEditor", "isValid: $valid, name='${state.name}', price='${state.priceRubles}', duration='${state.durationMinutes}'")
+        return valid
     }
 
     // === Save ===
 
     fun save() {
-        if (!isValid()) return
+        android.util.Log.d("ServiceEditor", "save() вызван, isValid=${isValid()}, state=${_uiState.value}")
+        if (!isValid()) {
+            android.util.Log.w("ServiceEditor", "save() отменён - isValid()=false")
+            return
+        }
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -100,18 +109,21 @@ class ServiceEditorViewModel @Inject constructor(
                 val state = _uiState.value
                 val priceKopecks = (state.priceRubles.toLongOrNull() ?: 0L) * 100
                 val duration = state.durationMinutes.toIntOrNull() ?: 60
+                android.util.Log.d("ServiceEditor", "Сохраняю услугу: id=${state.id}, name='${state.name}', price=$priceKopecks")
 
                 if (state.id == null) {
                     // Создание
-                    serviceRepository.createService(
+                    val created = serviceRepository.createService(
                         name = state.name,
                         priceKopecks = priceKopecks,
                         durationMinutes = duration,
                         description = state.description.takeIf { it.isNotBlank() }
                     )
+                    android.util.Log.d("ServiceEditor", "Услуга создана: ${created.id}, name='${created.name}'")
                 } else {
                     // Обновление
                     val existing = serviceRepository.getServiceById(state.id)
+                    android.util.Log.d("ServiceEditor", "Существующая услуга: $existing")
                     existing?.copy(
                         name = state.name,
                         priceKopecks = priceKopecks,
@@ -119,9 +131,11 @@ class ServiceEditorViewModel @Inject constructor(
                         description = state.description.takeIf { it.isNotBlank() }
                     )?.also {
                         serviceRepository.updateService(it)
+                        android.util.Log.d("ServiceEditor", "Услуга обновлена: ${it.id}")
                     }
                 }
 
+                android.util.Log.d("ServiceEditor", "Сохранение успешно, устанавливаю saveSuccess=true")
                 _saveSuccess.value = true
             } catch (e: Exception) {
                 android.util.Log.e("ServiceEditor", "Ошибка сохранения услуги", e)

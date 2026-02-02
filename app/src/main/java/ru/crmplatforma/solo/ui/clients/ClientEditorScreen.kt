@@ -46,7 +46,9 @@ fun ClientEditorScreen(
 
     // Закрыть после успешного сохранения
     LaunchedEffect(saveSuccess) {
+        android.util.Log.d("ClientEditorScreen", "saveSuccess изменился: $saveSuccess")
         if (saveSuccess) {
+            android.util.Log.d("ClientEditorScreen", "Переход назад (popBackStack)")
             navController.popBackStack()
         }
     }
