@@ -133,6 +133,8 @@ class ClientEditorViewModel @Inject constructor(
                 }
 
                 _saveSuccess.value = true
+            } catch (e: Exception) {
+                android.util.Log.e("ClientEditor", "Ошибка сохранения клиента", e)
             } finally {
                 _isLoading.value = false
             }

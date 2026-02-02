@@ -123,6 +123,8 @@ class ServiceEditorViewModel @Inject constructor(
                 }
 
                 _saveSuccess.value = true
+            } catch (e: Exception) {
+                android.util.Log.e("ServiceEditor", "Ошибка сохранения услуги", e)
             } finally {
                 _isLoading.value = false
             }
