@@ -73,9 +73,10 @@ fun ClientEditorScreen(
                     }
                 },
                 actions = {
+                    // Используем uiState напрямую — это реактивно!
                     TextButton(
                         onClick = { viewModel.save() },
-                        enabled = !isLoading && viewModel.isValid()
+                        enabled = !isLoading && uiState.name.isNotBlank()
                     ) {
                         Text("Сохранить")
                     }

@@ -54,9 +54,13 @@ fun ServiceEditorScreen(
                     }
                 },
                 actions = {
+                    // Используем uiState напрямую — это реактивно!
+                    val isValid = uiState.name.isNotBlank() &&
+                            uiState.priceRubles.isNotBlank() &&
+                            uiState.durationMinutes.isNotBlank()
                     TextButton(
                         onClick = { viewModel.save() },
-                        enabled = !isLoading && viewModel.isValid()
+                        enabled = !isLoading && isValid
                     ) {
                         Text("Сохранить")
                     }
