@@ -122,7 +122,9 @@ fun ServicePickerScreen(
 
             // Список услуг
             if (services.isEmpty()) {
-                EmptyServicesState()
+                EmptyServicesState(
+                    onAddService = { navController.navigate("service/new") }
+                )
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -196,7 +198,9 @@ private fun ServicePickerCard(
 }
 
 @Composable
-private fun EmptyServicesState() {
+private fun EmptyServicesState(
+    onAddService: () -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -218,11 +222,21 @@ private fun EmptyServicesState() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Добавьте услуги в разделе «Ещё → Услуги»",
+                text = "Создайте первую услугу",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onAddService) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Добавить услугу")
+            }
         }
     }
 }
