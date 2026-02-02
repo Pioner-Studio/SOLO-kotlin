@@ -15,6 +15,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -32,6 +34,8 @@ fun ClientEditorScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val context = LocalContext.current
 
     // Загрузить клиента если редактируем
     LaunchedEffect(clientId) {
@@ -44,6 +48,14 @@ fun ClientEditorScreen(
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             navController.popBackStack()
+        }
+    }
+
+    // Показать Toast при ошибке
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.clearError()
         }
     }
 
@@ -167,6 +179,14 @@ fun ClientEditorScreen(
                     minLines = 3,
                     maxLines = 5,
                     placeholder = { Text("Аллергии, предпочтения, особенности...") }
+                )
+
+                // DEBUG: Показать текущее состояние
+                HorizontalDivider()
+                Text(
+                    text = "DEBUG: name='${uiState.name}' phone='${uiState.phone}' email='${uiState.email}' valid=${viewModel.isValid()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
                 )
 
                 // Кнопка удаления (только при редактировании)

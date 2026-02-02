@@ -41,6 +41,13 @@ class ClientEditorViewModel @Inject constructor(
     private val _saveSuccess = MutableStateFlow(false)
     val saveSuccess: StateFlow<Boolean> = _saveSuccess.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    fun clearError() {
+        _errorMessage.value = null
+    }
+
     fun loadClient(id: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -139,6 +146,7 @@ class ClientEditorViewModel @Inject constructor(
                 _saveSuccess.value = true
             } catch (e: Exception) {
                 android.util.Log.e("ClientEditor", "Ошибка сохранения клиента", e)
+                _errorMessage.value = "Ошибка: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
