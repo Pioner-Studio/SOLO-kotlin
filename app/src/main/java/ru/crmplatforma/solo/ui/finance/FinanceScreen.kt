@@ -261,7 +261,8 @@ private fun TransactionCard(transaction: TransactionEntity) {
 @Composable
 private fun EmptyTransactionsState(onAddTransaction: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onAddTransaction
     ) {
         Column(
             modifier = Modifier
@@ -270,7 +271,7 @@ private fun EmptyTransactionsState(onAddTransaction: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = Icons.Default.Add,
+                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -282,17 +283,11 @@ private fun EmptyTransactionsState(onAddTransaction: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Добавьте первый доход или расход",
+                text = "Нажмите + чтобы добавить",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onAddTransaction) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Добавить")
-            }
         }
     }
 }
