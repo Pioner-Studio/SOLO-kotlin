@@ -66,16 +66,18 @@ class ClientEditorViewModel @Inject constructor(
     // === Setters ===
 
     fun setName(name: String) {
+        android.util.Log.d("ClientEditor", "setName: '$name', current state: ${_uiState.value}")
         _uiState.value = _uiState.value.copy(name = name)
     }
 
     fun setPhone(phone: String) {
-        // Фильтруем только цифры и +
-        val filtered = phone.filter { it.isDigit() || it == '+' }
-        _uiState.value = _uiState.value.copy(phone = filtered)
+        android.util.Log.d("ClientEditor", "setPhone: '$phone', current state: ${_uiState.value}")
+        // Убрал фильтрацию — пусть пользователь вводит как хочет
+        _uiState.value = _uiState.value.copy(phone = phone)
     }
 
     fun setEmail(email: String) {
+        android.util.Log.d("ClientEditor", "setEmail: '$email', current state: ${_uiState.value}")
         _uiState.value = _uiState.value.copy(email = email)
     }
 
@@ -94,7 +96,9 @@ class ClientEditorViewModel @Inject constructor(
     // === Validation ===
 
     fun isValid(): Boolean {
-        return _uiState.value.name.isNotBlank()
+        val valid = _uiState.value.name.isNotBlank()
+        android.util.Log.d("ClientEditor", "isValid: $valid, name='${_uiState.value.name}'")
+        return valid
     }
 
     // === Save ===
