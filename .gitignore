@@ -27,8 +27,8 @@ local.properties
 keystore.properties
 *.jks
 
-# Firebase
-google-services.json
+# Firebase — НЕ игнорируем, файл в репозитории для синхронизации между ПК
+# google-services.json
 
 # Android Studio
 *.iml
